@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\GrimDawnHooks">
+      <UniqueIdentifier>{642fb747-0515-4eb4-8863-aa57ab8c0aca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GrimDawnHooks">
+      <UniqueIdentifier>{f22caa28-c6cd-4995-a68e-ed2de5a75054}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GrimRunMessage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GrimDawnHook.h">
+      <Filter>Header Files\GrimDawnHooks</Filter>
+    </ClInclude>
+    <ClInclude Include="TestHook.h">
+      <Filter>Header Files\GrimDawnHooks</Filter>
+    </ClInclude>
+    <ClInclude Include="UnpauseGameHook.h">
+      <Filter>Header Files\GrimDawnHooks</Filter>
+    </ClInclude>
+    <ClInclude Include="PauseGameHook.h">
+      <Filter>Header Files\GrimDawnHooks</Filter>
+    </ClInclude>
+    <ClInclude Include="ApplyDamageHook.h">
+      <Filter>Header Files\GrimDawnHooks</Filter>
+    </ClInclude>
+    <ClInclude Include="AttackTargetHook.h">
+      <Filter>Header Files\GrimDawnHooks</Filter>
+    </ClInclude>
+    <ClInclude Include="ExecuteDamageHook.h">
+      <Filter>Header Files\GrimDawnHooks</Filter>
+    </ClInclude>
+    <ClInclude Include="DurationDamageHook.h">
+      <Filter>Header Files\GrimDawnHooks</Filter>
+    </ClInclude>
+    <ClInclude Include="LoggerHook.h">
+      <Filter>Header Files\GrimDawnHooks</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GrimRunMessage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GrimDawnHook.cpp">
+      <Filter>Source Files\GrimDawnHooks</Filter>
+    </ClCompile>
+    <ClCompile Include="TestHook.cpp">
+      <Filter>Source Files\GrimDawnHooks</Filter>
+    </ClCompile>
+    <ClCompile Include="UnpauseGameHook.cpp">
+      <Filter>Source Files\GrimDawnHooks</Filter>
+    </ClCompile>
+    <ClCompile Include="PauseGameHook.cpp">
+      <Filter>Source Files\GrimDawnHooks</Filter>
+    </ClCompile>
+    <ClCompile Include="ApplyDamageHook.cpp">
+      <Filter>Source Files\GrimDawnHooks</Filter>
+    </ClCompile>
+    <ClCompile Include="AttackTargetHook.cpp">
+      <Filter>Source Files\GrimDawnHooks</Filter>
+    </ClCompile>
+    <ClCompile Include="ExecuteDamageHook.cpp">
+      <Filter>Source Files\GrimDawnHooks</Filter>
+    </ClCompile>
+    <ClCompile Include="DurationDamageHook.cpp">
+      <Filter>Source Files\GrimDawnHooks</Filter>
+    </ClCompile>
+    <ClCompile Include="LoggerHook.cpp">
+      <Filter>Source Files\GrimDawnHooks</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\..\..\Downloads\Detours Version 3.0 Build_343\Detours\lib.X64\detours.lib">
+      <Filter>Source Files</Filter>
+    </Library>
+  </ItemGroup>
+</Project>

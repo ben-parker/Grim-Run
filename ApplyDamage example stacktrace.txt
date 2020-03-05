@@ -1,0 +1,41 @@
+********* Start of Trace *********
+ 0# boost::stacktrace::basic_stacktrace<std::allocator<boost::stacktrace::frame> >::init at D:\Downloads\boost_1_72_0\boost\stacktrace\stacktrace.hpp:75
+ 1# boost::stacktrace::basic_stacktrace<std::allocator<boost::stacktrace::frame> >::basic_stacktrace<std::allocator<boost::stacktrace::frame> > at D:\Downloads\boost_1_72_0\boost\stacktrace\stacktrace.hpp:127
+ 2# ApplyDamageHook::HookFunction at D:\Projects\Grim Run\grhook\ApplyDamageHook.cpp:61
+ 3# GAME::CombatManager::TakeAttack in Game
+ 4# GAME::Character::TakeAttack in Game
+ 5# GAME::Character::AttackTarget in Game
+ 6# GAME::SkillActivated::ApplyMeleeDamage in Game
+ 7# GAME::Skill_WPAttack_BasicAttack::TargetResult in Game
+ 8# GAME::SkillManager::SkillTargetResult in Game
+ 9# GAME::SkillTargetResultConfigCmd::Execute in Game
+10# GAME::Actor::Enqueue in Engine
+11# GAME::SkillServices_Character::SendTargetResult in Game
+12# GAME::SkillActivated::ExecuteMeleeAttack in Game
+13# GAME::Skill_WPAttack_BasicAttack::ActivateNow in Game
+14# GAME::SkillActivatedWeaponPool::HitAction in Game
+15# GAME::Skill_WeaponPool_ChargedFinale::HitAction in Game
+16# GAME::SkillManager::HandleSkillAnimationCallback in Game
+17# GAME::AttackAction::AnimationCallback in Game
+18# GAME::Character::AnimationCallback in Game
+19# GAME::Singleton<GAME::Jukebox>::Destroy in Engine
+20# GAME::AnimChannel::Update in Engine
+21# GAME::GraphicsMeshInstance::Update in Engine
+22# GAME::Actor::UpdateSelf in Engine
+23# GAME::Character::UpdateSelf in Game
+24# GAME::Player::UpdateSelf in Game
+25# GAME::Entity::Update in Engine
+26# GAME::Level::PreLoad in Engine
+27# GAME::Level::PreLoad in Engine
+28# GAME::Level::Update in Engine
+29# GAME::Region::Update in Engine
+30# GAME::World::Update in Engine
+31# GAME::World::Update in Engine
+32# GAME::Engine::Update in Engine
+33# 0x0071D14E in grim_dawn
+34# 0x00779C48 in grim_dawn
+35# LZ4_decompress_fast_usingDict in grim_dawn
+36# BaseThreadInitThunk in KERNEL32
+37# RtlGetAppContainerNamedObjectPath in ntdll
+38# RtlGetAppContainerNamedObjectPath in ntdll
+********* End of Trace *********
