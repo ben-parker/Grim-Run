@@ -57,7 +57,7 @@ void* __fastcall ApplyDamageHook::FunctionHook(void* This, float f, int* PlaySta
 	// end of message
 	if (playStatsDamageTypeValue != 4)
 	{
-		std::cout << "ApplyDamage amount " << f << 
+		std::cout << "    ApplyDamage amount " << f << 
 			" type " << damageType << std::endl;
 	}
 	else

@@ -157,12 +157,13 @@ void __cdecl LoggerHook::FunctionHook(
 		//cout << str;
 		// %s param0
 		std::string name = std::string((char*)_param0);
-		std::cout << "Attacker name: " << name << std::endl;
+		cout << endl << "Begin Attack" << endl
+			<< "    Attacker name : " << name << endl;
 	}
 	else if (startsWith(attackerIdMsg, str))
 	{
 		//cout << str;
-		cout << "Attacker ID 0x" << _param0 << endl;
+		cout << "    Attacker ID 0x" << _param0 << endl;
 	}
 	else if (startsWith(defenderNameMsg, str))
 	{
@@ -170,20 +171,22 @@ void __cdecl LoggerHook::FunctionHook(
 		//cout << str;
 
 		std::string name = std::string((char*)_param0);
-		std::cout << "Defender name: " << name << std::endl;
+		std::cout << "    Defender name: " << name << std::endl;
 	}
 	//else if (startsWith(defenderIdMsg, str))
 	//{
 	//	// last 2 bytes of pointer are same across messages
 	//	cout << str;
 	//	cout << "      ** Defender ID 0x" << _param0 << endl;
+	//	cout << _param0 << " "
+	//		<< _param1 << " " << _param2 << " "
+	//		<< _param3 << " " << _param4 << " " << _param5 << endl;
 	//}
 	else if (startsWith(damageToDefenderMsg, str))
 	{
 		std::string dmgType = std::string((char*)_param2);
-		cout << "    Damage to defender 0x" << _param1 << 
-			" (" << dmgType << ")" << endl << endl;
-
+		cout << "      Damage to defender 0x" << _param1 << 
+			" (" << dmgType << ")" << endl;
 	}
 	//else if (startsWith(totalDamageMsg, str))
 	//{

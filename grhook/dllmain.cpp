@@ -97,7 +97,7 @@ int ProcessAttach(HINSTANCE hModule) {
     }
     
     // why does this crash the target process?
-    //thread worker_thread(ListenerThread);
+    // thread worker_thread(ListenerThread);
     g_hWorkerThread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)ListenerThread, hModule, 0, nullptr);
 
     return true;
