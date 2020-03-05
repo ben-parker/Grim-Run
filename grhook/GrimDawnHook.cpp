@@ -2,6 +2,9 @@
 #include "GrimDawnHook.h"
 #include <string>
 
+std::mutex GrimDawnHook::mQueue;
+std::condition_variable GrimDawnHook::condition;
+
 void GrimDawnHook::EnableHook()
 {
 	return;

@@ -10,72 +10,72 @@
 #include "ExecuteDamageHook.h"
 #include "DurationDamageHook.h"
 #include "LoggerHook.h"
+#include "GameEventMessage.h"
 #include <vector>
 #include <thread>
 #include <iostream>
+#include <queue>
 #include <Windows.h>
 #include <combaseapi.h>
 #include <string.h>
 #include <TlHelp32.h>
+#include <mutex>
 using std::thread;
+using std::queue;
+using std::vector;
+using std::mutex;
+using std::lock_guard;
 
 int ProcessAttach(HINSTANCE hModule);
 int ProcessDetach(HINSTANCE hModule);
-DWORD WINAPI ListenerThread(HMODULE hModule);
+DWORD WINAPI WorkerThread(HMODULE hModule);
+void ListenerThread(queue<GameEventMessage>* q);
 void SendGrimRunMessage();
 HANDLE OpenProcessByName(LPCTSTR Name, DWORD dwAccess);
-
-bool testing = false;
-
-std::vector<GrimDawnHook*> hooks;
-//PauseGameHook pauseGameHook;
-//UnpauseGameHook unpauseGameHook;
-//ApplyDamageHook applyDamageHook;
-//AttackTargetHook attackTargetHook;
-//ExecuteDamageHook executeDamageHook;
-//DurationDamageHook durationDamageHook;
 
 HANDLE g_hWorkerThread;
 HANDLE g_hEvent;
 HWND g_hGrimRunWnd;
+bool listen = true;
 
-DWORD WINAPI ListenerThread(HMODULE hModule)
+vector<GrimDawnHook*> hooks;
+
+DWORD WINAPI WorkerThread(HMODULE hModule)
 {
+    queue<GameEventMessage> msgQueue;
+
     FreeConsole();
     AllocConsole();
     FILE* f;
     freopen_s(&f, "CONOUT$", "w", stdout);
-    
+
     std::cout << "*** Worker Thread started ***" << std::endl;
 
-    // attach all hooks
-    if (testing)
-    {
-        TestHook testHook;
-        testHook.EnableHook();
-    }
-    else
-    {
-        //hooks.push_back(new PauseGameHook());
-        //hooks.push_back(new UnpauseGameHook());
-        hooks.push_back(new ApplyDamageHook());
-        //hooks.push_back(new AttackTargetHook());
-        //hooks.push_back(new ExecuteDamageHook());
-        //hooks.push_back(new DurationDamageHook());
-        hooks.push_back(new LoggerHook());
+    //hooks.push_back(new PauseGameHook());
+    //hooks.push_back(new UnpauseGameHook());
+    hooks.push_back(new ApplyDamageHook(&msgQueue));
+    //hooks.push_back(new AttackTargetHook());
+    //hooks.push_back(new ExecuteDamageHook());
+    //hooks.push_back(new DurationDamageHook());
+    hooks.push_back(new LoggerHook());
 
-        for (auto const& hook : hooks)
-        {
-            hook->EnableHook();
-        }
+    for (auto const& hook : hooks)
+    {
+        hook->EnableHook();
     }
+
     
+    std::thread listenerThread(ListenerThread, &msgQueue);
     while (true)
     {
         if (GetKeyState(VK_END) & 0x8000)
             break;
     }
 
+    listen = false;
+    GrimDawnHook::condition.notify_one();
+    listenerThread.join();
+    
     fclose(f);
     FreeConsole();
     FreeLibraryAndExitThread(hModule, 0);
@@ -83,6 +83,30 @@ DWORD WINAPI ListenerThread(HMODULE hModule)
     ProcessDetach(hModule);
     
     return 0;
+}
+
+void ListenerThread(queue<GameEventMessage>* q)
+{
+    std::unique_lock<mutex> lock(GrimDawnHook::mQueue);
+    while (listen)
+    {
+        while (q->empty() && listen)
+        {
+            GrimDawnHook::condition.wait(lock);
+        }
+
+        if (q->empty())
+        {
+            listen = false;
+        }
+        else
+        {
+            auto msg = q->front();
+            std::cout << "*** Popped a message" << std::endl;
+            q->pop();
+        }
+        
+    }
 }
 
 //std::vector<BaseMethodHook*> hooks;
@@ -98,7 +122,7 @@ int ProcessAttach(HINSTANCE hModule) {
     
     // why does this crash the target process?
     // thread worker_thread(ListenerThread);
-    g_hWorkerThread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)ListenerThread, hModule, 0, nullptr);
+    g_hWorkerThread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)WorkerThread, hModule, 0, nullptr);
 
     return true;
 }
@@ -106,16 +130,10 @@ int ProcessAttach(HINSTANCE hModule) {
 int ProcessDetach(HINSTANCE hModule) {
     // Signal that we are shutting down
     // This message is not at all guaranteed to get sent.
-    if (!testing)
+    
+    for (auto const& hook : hooks)
     {
-        /*for (auto const& hook : hooks)
-        {
-            hook.DisableHook();
-        }*/
-        for (auto const& hook : hooks)
-        {
-            hook->DisableHook();
-        }
+        hook->DisableHook();
     }
 
     CloseHandle(g_hWorkerThread);

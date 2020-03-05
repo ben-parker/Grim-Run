@@ -162,6 +162,8 @@
     <ClInclude Include="DurationDamageHook.h" />
     <ClInclude Include="ExecuteDamageHook.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="GameEventMessage.h" />
+    <ClInclude Include="GameEventType.h" />
     <ClInclude Include="GrimDawnHook.h" />
     <ClInclude Include="GrimRunMessage.h" />
     <ClInclude Include="LoggerHook.h" />
@@ -176,6 +178,8 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="DurationDamageHook.cpp" />
     <ClCompile Include="ExecuteDamageHook.cpp" />
+    <ClCompile Include="GameEventMessage.cpp" />
+    <ClCompile Include="GameEventType.cpp" />
     <ClCompile Include="GrimDawnHook.cpp" />
     <ClCompile Include="GrimRunMessage.cpp" />
     <ClCompile Include="LoggerHook.cpp" />

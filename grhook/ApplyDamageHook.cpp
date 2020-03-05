@@ -1,14 +1,27 @@
 #include "pch.h"
 #include "ApplyDamageHook.h"
+#include "GameEventMessage.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <detours.h>
 #include <iostream>
+#include <mutex>
+#include <queue>
+
 //#include <boost/stacktrace.hpp>
 
-//HANDLE ApplyDamageHook::m_hEvent;
 ApplyDamageHook::ApplyDamageFunctionPtr ApplyDamageHook::oApplyDamageFunc;
-int CharacterApplyDamage = 10101012;
+std::queue<GameEventMessage>* ApplyDamageHook::msgQueue;
+
+ApplyDamageHook::ApplyDamageHook() 
+{
+	msgQueue = nullptr;
+}
+
+ApplyDamageHook::ApplyDamageHook(std::queue<GameEventMessage>* q)
+{
+	msgQueue = q;
+}
 
 void ApplyDamageHook::EnableHook() 
 {
@@ -40,16 +53,10 @@ void ApplyDamageHook::DisableHook()
 // There are at least 2 pairs of values that mean the same thing, not used together
 void* __fastcall ApplyDamageHook::FunctionHook(void* This, float f, int* PlayStatsDamageType, int CombatAttributeType, void* Vector) 
 {
-	//const int buffSize = sizeof(float) + sizeof(int) + sizeof(int);
-	//unsigned char* buffer[buffSize] = {};
-	//
 	float damageDone = f;
-	int* playStatsDamageType = PlayStatsDamageType;
-	int playStatsDamageTypeValue = static_cast<int>(*playStatsDamageType);
+	int playStatsDamageTypeValue = static_cast<int>(*PlayStatsDamageType);
 	int damageType = CombatAttributeType;
-
-	////void* damageAddress = (void*)&f;
-	//// float, struct, enum, vector<int>
+	GameEventMessage m;
 
 	// PlayStatsDamageType seems to be 4 at the end of a damage "message"
 	// e.g. Cadence elemental damage component
@@ -59,10 +66,22 @@ void* __fastcall ApplyDamageHook::FunctionHook(void* This, float f, int* PlaySta
 	{
 		std::cout << "    ApplyDamage amount " << f << 
 			" type " << damageType << std::endl;
+
+		m.msgType = GameEventType::apply_damage;
 	}
 	else
 	{
 		std::cout << "End attack" << std::endl;
+		m.msgType = GameEventType::end_combat;
+	}
+
+	if (msgQueue != nullptr)
+	{
+		{
+			std::lock_guard<std::mutex> guard(GrimDawnHook::mQueue);
+			msgQueue->push(m);
+		}
+		GrimDawnHook::condition.notify_one();
 	}
 	
 	// before returning, create data object to send to Grim Run
