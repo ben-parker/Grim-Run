@@ -22,8 +22,12 @@ private:
 		void* _param5
 	);
 
+	static HANDLE hProcess;
+	static std::queue<GameEventMessage>* msgQueue;
+
 public:
 	LoggerHook();
+	LoggerHook(std::queue<GameEventMessage>* q);
 	void EnableHook();
 	void DisableHook();
 };

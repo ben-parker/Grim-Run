@@ -68,6 +68,7 @@ void* __fastcall ApplyDamageHook::FunctionHook(void* This, float f, int* PlaySta
 			" type " << damageType << std::endl;
 
 		m.msgType = GameEventType::apply_damage;
+		m.damage = f;
 	}
 	else
 	{

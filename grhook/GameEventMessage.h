@@ -1,12 +1,15 @@
 #pragma once
 #include "GameEventType.h"
+#include <cstdint>
 
-class GameEventMessage
+struct GameEventMessage
 {
 public:
-	GameEventMessage();
-	GameEventMessage(GameEventType type);
+	GameEventMessage() = default;
 
 	GameEventType msgType;
+	float damage;
+	char data[100];
+	char data2[100];
 };
 

@@ -10,10 +10,26 @@ using std::endl;
 using std::string;
 
 LoggerHook::LoggerFunctionPtr LoggerHook::oLoggerFunc;
+std::queue<GameEventMessage>* LoggerHook::msgQueue;
+
+HANDLE hCurProcess = GetCurrentProcess();
+HANDLE LoggerHook::hProcess = OpenProcess(
+	PROCESS_CREATE_THREAD |
+	PROCESS_QUERY_INFORMATION |
+	PROCESS_VM_OPERATION |
+	PROCESS_VM_WRITE |
+	PROCESS_VM_READ,
+	true,
+	GetProcessId(hCurProcess));
 
 LoggerHook::LoggerHook()
 {
-	
+	msgQueue = nullptr;
+}
+
+LoggerHook::LoggerHook(std::queue<GameEventMessage>* q)
+{
+	msgQueue = q;
 }
 
 void LoggerHook::EnableHook()
@@ -21,23 +37,6 @@ void LoggerHook::EnableHook()
 	oLoggerFunc = reinterpret_cast<LoggerFunctionPtr>(GetProcAddress(
 		::GetModuleHandle(L"Engine.dll"),
 		"?Log@Engine@GAME@@UEBAXW4LogPriority@2@IPEBDZZ"));
-	
-	float f = 5.5f;
-	double d = 5.5;
-	int i = 5;
-	char c = { 'e' };
-	// ?AttackTarget@Character@GAME@@UAE_NIAAVEntity@2@AAVParametersCombat@2@_NIII@Z
-	printf("Size of void: %d\n", sizeof(void*));
-	printf("Size of int: %d\n", sizeof(i));
-	printf("Size of int*: %d\n", sizeof(int*));
-	printf("Size of float: %d\n", sizeof(f));
-	printf("Size of float*: %d\n", sizeof(float*));
-	printf("Size of double: %d\n", sizeof(d));
-	printf("Size of double*: %d\n", sizeof(double*));
-	printf("Size of char: %d\n", sizeof(c));
-	printf("Size of char*: %d\n", sizeof(char*));
-
-	cout << "\nOriginal Log Function at " << oLoggerFunc << endl;
 
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
@@ -85,12 +84,6 @@ static void swap4(void* v)
 	out[3] = in[0];
 	memcpy(v, out, 4);
 }
-
-struct TotalDamage
-{
-	float absolute;
-	float dot;
-};
 
 const char* attackerNameMsg = "    attackerName = %s";
 const char* attackerIdMsg = "    attackerID = %d";
@@ -142,28 +135,32 @@ void __cdecl LoggerHook::FunctionHook(
 	void* _param4, // defender address?
 	void* _param5)
 {
-	HANDLE hCurProcess = GetCurrentProcess();
-	HANDLE hProcess = OpenProcess(
-		PROCESS_CREATE_THREAD |
-		PROCESS_QUERY_INFORMATION |
-		PROCESS_VM_OPERATION |
-		PROCESS_VM_WRITE |
-		PROCESS_VM_READ,
-		true,
-		GetProcessId(hCurProcess));
+	size_t bytesRead = 0;
+	const size_t size = 100;
+	uint8_t buffer[size] = { 0 };
+	GameEventMessage msg;
 
 	if (startsWith(attackerNameMsg, str))
 	{
-		//cout << str;
 		// %s param0
 		std::string name = std::string((char*)_param0);
 		cout << endl << "Begin Attack" << endl
 			<< "    Attacker name : " << name << endl;
+		if (ReadProcessMemory(hProcess, _param0, &msg.data, size, &bytesRead))
+		{
+			msg.msgType = GameEventType::attacker_name;
+			msgQueue->push(msg);
+		}
 	}
 	else if (startsWith(attackerIdMsg, str))
 	{
 		//cout << str;
 		cout << "    Attacker ID 0x" << _param0 << endl;
+		if (ReadProcessMemory(hProcess, &_param0, &msg.data, 4, &bytesRead))
+		{
+			msg.msgType = GameEventType::attacker_id;
+			msgQueue->push(msg);
+		}
 	}
 	else if (startsWith(defenderNameMsg, str))
 	{
@@ -172,21 +169,42 @@ void __cdecl LoggerHook::FunctionHook(
 
 		std::string name = std::string((char*)_param0);
 		std::cout << "    Defender name: " << name << std::endl;
+
+		if (ReadProcessMemory(hProcess, _param0, &msg.data, size, &bytesRead))
+		{
+			msg.msgType = GameEventType::defender_name;
+			msgQueue->push(msg);
+		}
 	}
-	//else if (startsWith(defenderIdMsg, str))
-	//{
-	//	// last 2 bytes of pointer are same across messages
-	//	cout << str;
-	//	cout << "      ** Defender ID 0x" << _param0 << endl;
-	//	cout << _param0 << " "
-	//		<< _param1 << " " << _param2 << " "
-	//		<< _param3 << " " << _param4 << " " << _param5 << endl;
-	//}
+	else if (startsWith(defenderIdMsg, str))
+	{
+		// last 2 bytes of pointer are same across messages
+		cout << "    Defender ID 0x" << _param0 << endl;
+		
+		if (ReadProcessMemory(hProcess, &_param0, &msg.data, 4, &bytesRead))
+		{
+			msg.msgType = GameEventType::defender_id;
+			msgQueue->push(msg);
+		}
+	}
 	else if (startsWith(damageToDefenderMsg, str))
 	{
 		std::string dmgType = std::string((char*)_param2);
-		cout << "      Damage to defender 0x" << _param1 << 
-			" (" << dmgType << ")" << endl;
+		//const size_t size = 8;
+		//uint8_t result[size] = { 0 };
+		//size_t bytesRead = 0;
+		////int address = reinterpret_cast<char*>(_param1);
+		//PrintBytesAtAddress(hProcess, &_param0, size, result);
+
+		cout << "      Damage to defender 0x" << _param1 << " (" << dmgType << ")"
+			<< endl;// << address << endl;
+
+		if (ReadProcessMemory(hProcess, &_param1, &msg.data, 4, &bytesRead)
+			&& ReadProcessMemory(hProcess, _param2, &msg.data2, size, &bytesRead))
+		{
+			msg.msgType = GameEventType::damage_to_defender;
+			msgQueue->push(msg);
+		}
 	}
 	//else if (startsWith(totalDamageMsg, str))
 	//{

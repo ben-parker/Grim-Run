@@ -20,6 +20,7 @@
 #include <string.h>
 #include <TlHelp32.h>
 #include <mutex>
+using std::string;
 using std::thread;
 using std::queue;
 using std::vector;
@@ -57,7 +58,7 @@ DWORD WINAPI WorkerThread(HMODULE hModule)
     //hooks.push_back(new AttackTargetHook());
     //hooks.push_back(new ExecuteDamageHook());
     //hooks.push_back(new DurationDamageHook());
-    hooks.push_back(new LoggerHook());
+    hooks.push_back(new LoggerHook(&msgQueue));
 
     for (auto const& hook : hooks)
     {
@@ -87,7 +88,13 @@ DWORD WINAPI WorkerThread(HMODULE hModule)
 
 void ListenerThread(queue<GameEventMessage>* q)
 {
+    bool combatEvent = false;
+    GrimRunMessage grm;
+    string attackerName, attackerId, defenderName, defenderId;
+    size_t attackerNameLen, defenderNameLen = 0;
+ 
     std::unique_lock<mutex> lock(GrimDawnHook::mQueue);
+
     while (listen)
     {
         while (q->empty() && listen)
@@ -97,21 +104,54 @@ void ListenerThread(queue<GameEventMessage>* q)
 
         if (q->empty())
         {
-            listen = false;
+            break;
         }
-        else
+       
+        auto msg = q->front();
+        q->pop();
+        //std::cout << "Popped a message" << std::endl;
+        // have an "in combat" flag and save these values to send with each message
+        // attacker name begins a combat event
+        // attacker id
+        // defender name
+        // defender ID
+        if (msg.msgType == GameEventType::attacker_name)
         {
-            auto msg = q->front();
-            std::cout << "*** Popped a message" << std::endl;
-            q->pop();
+            combatEvent = true;
+            attackerName = std::string(msg.data);
+            attackerNameLen = attackerName.length();
         }
+        else if (msg.msgType == GameEventType::attacker_id)
+        {
+            attackerId = std::string(msg.data);
+        }
+        else if (msg.msgType == GameEventType::apply_damage)
+        {
+            grm.Damage = msg.damage;
+            std::cout << grm.Damage << std::endl;
+        }
+        else if (msg.msgType == GameEventType::damage_to_defender)
+        {
+            memcpy(&grm.DefenderId, msg.data, 8);
+            memcpy(&grm.DamageType, msg.data2, 20);
+        }
+
+        if (combatEvent)
+        {
+            attackerName.copy(grm.AttackerName, attackerNameLen);
+            attackerId.copy(grm.AttackerId, 4);
+            // also copy defender name
+        }
+        
+        // send message
+        // if outside of a combat event (dot or environmental damage)
+        // will just be damage amount and defender Id
+
         
     }
 }
 
-//std::vector<BaseMethodHook*> hooks;
 int ProcessAttach(HINSTANCE hModule) {
-    //g_hEvent = CreateEvent(NULL, FALSE, FALSE, "IA_Worker");
     //std::cout << "*** Process attached! ***" << std::endl;
     g_hGrimRunWnd = FindWindow(L"WindowsForms10.Window.8.app.0.141b42a_r10_ad1", NULL);
 
@@ -146,9 +186,12 @@ void SendGrimRunMessage()
     COPYDATASTRUCT cds;
     
     std::string str = "this is a test from DLL!";
-    size_t msgSize = str.size() < 255 ? str.size() : 255;
+    size_t msgSize = 
+        str.size() < 255 
+        ? str.size() 
+        : 255;
     
-    str.copy(data.Text, msgSize);
+    //str.copy(data.Text, msgSize);
 
     cds.dwData = 1; // can be anything, identifies the data type.  should be structured?
     cds.cbData = str.size(); // size of whole struct?  does it matter?
