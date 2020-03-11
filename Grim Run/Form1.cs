@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -18,13 +21,26 @@ namespace GrimRun
         private string processName = "Grim Dawn";
 
         private float totalDamage;
+        private bool listen;
+        private Thread pipeListener;
 
         public Form1()
         {
             InitializeComponent();
             this.Text = "Grim Run Test";
+
+            var progress = new Progress<GrimRunMessage>(UpdateDamage);
+            pipeListener = new Thread(() => PipeServer(progress));
+            pipeListener.Start();
+            listen = true;
+            //Task.Run(() => PipeServer());
         }
 
+        private void UpdateDamage(GrimRunMessage msg)
+        {
+            totalDamage += msg.Damage;
+            totalDamageDisplay.Text = totalDamage.ToString();
+        }
         private void Form1_Shown(Object sender, EventArgs e)
         {
             try
@@ -38,47 +54,84 @@ namespace GrimRun
             }
         }
 
-
-        protected override void WndProc(ref Message m)
+        private void PipeServer(IProgress<GrimRunMessage> progress)
         {
-            // Listen for operating system messages.
-            if (m.Msg == WM_COPYDATA)
-            {
-                COPYDATASTRUCT cds = Marshal.PtrToStructure<COPYDATASTRUCT>(m.LParam);
-                GrimRunMessage msg = Marshal.PtrToStructure<GrimRunMessage>(cds.lpData);
+            int bytesRead = 0;
+            var pipe = new NamedPipeServerStream("GrimRunPipe", PipeDirection.In);
+            pipe.WaitForConnection();
 
-                if (msg.AttackerNameLen > 0)
+            while (listen)
+            {
+                var bytes = new byte[Marshal.SizeOf(typeof(GrimRunMessage))];
+                bytesRead = pipe.Read(bytes, 0, Marshal.SizeOf(typeof(GrimRunMessage)));
+
+                if (bytesRead > 0)
                 {
-                    this.textBox1.Text = msg.AttackerName.Substring(0, msg.AttackerNameLen);
+                    GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                    try
+                    {
+                        var msg = Marshal.PtrToStructure<GrimRunMessage>(handle.AddrOfPinnedObject());
+                        Console.WriteLine($"Attacker {msg.AttackerName} Damage {msg.Damage}");
+                        progress.Report(msg);
+                    }
+                    finally
+                    {
+                        handle.Free();
+                    }
                 }
                 else
                 {
-                    this.textBox1.Text = msg.AttackerName;
+                    Console.Error.WriteLine("Failed to read from pipe, shutting my ears");
+                    listen = false;
                 }
-
-                if (msg.Damage > 0)
-                {
-                    totalDamage += msg.Damage;
-                    totalDamageDisplay.Text = totalDamage.ToString();
-                }
+                
             }
-
-            base.WndProc(ref m);
         }
+
+        //protected override void WndProc(ref Message m)
+        //{
+        //    // Listen for operating system messages.
+        //    if (m.Msg == WM_COPYDATA)
+        //    {
+        //        COPYDATASTRUCT cds = Marshal.PtrToStructure<COPYDATASTRUCT>(m.LParam);
+        //        GrimRunMessage msg = Marshal.PtrToStructure<GrimRunMessage>(cds.lpData);
+
+        //        if (msg.AttackerNameLen > 0)
+        //        {
+        //            this.textBox1.Text = msg.AttackerName.Substring(0, msg.AttackerNameLen);
+        //        }
+        //        else
+        //        {
+        //            this.textBox1.Text = msg.AttackerName;
+        //        }
+
+        //        if (msg.Damage > 0)
+        //        {
+        //            totalDamage += msg.Damage;
+        //            totalDamageDisplay.Text = totalDamage.ToString();
+        //        }
+        //    }
+
+        //    base.WndProc(ref m);
+        //}
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            return;// GrimRunInjector.Inject(dllPath, processName);
+            // GrimRunInjector.Inject(dllPath, processName);
+            listen = false;
+            pipeListener.Join();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             try
             {
+                listen = true;
                 GrimRunInjector.Inject(dllPath, processName);
             }
             catch (IndexOutOfRangeException ex)
             {
+                listen = false;
                 Console.Error.WriteLine($"Unable to find process by name {processName}, exiting.");
                 this.Close();
             }

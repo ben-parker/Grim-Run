@@ -36,7 +36,7 @@ HANDLE OpenProcessByName(LPCTSTR Name, DWORD dwAccess);
 
 HANDLE g_hWorkerThread;
 HANDLE g_hEvent;
-HWND g_hGrimRunWnd;
+HANDLE g_hPipe;
 bool listen = true;
 
 vector<GrimDawnHook*> hooks;
@@ -64,7 +64,15 @@ DWORD WINAPI WorkerThread(HMODULE hModule)
     {
         hook->EnableHook();
     }
-
+    
+    // Connect to named pipe to communicate back to Grim Run
+    g_hPipe = CreateFile(TEXT("\\\\.\\pipe\\GrimRunPipe"),
+        GENERIC_WRITE,
+        0,
+        NULL,
+        OPEN_EXISTING,
+        0,
+        NULL);
     
     std::thread listenerThread(ListenerThread, &msgQueue);
     while (true)
@@ -89,7 +97,7 @@ DWORD WINAPI WorkerThread(HMODULE hModule)
 void ListenerThread(queue<GameEventMessage>* q)
 {
     bool combatEvent = false;
-    GrimRunMessage grm;
+    GrimRunMessage grm = {};
     string attackerName, attackerId, defenderName, defenderId;
     size_t attackerNameLen, defenderNameLen = 0;
  
@@ -162,8 +170,7 @@ void ListenerThread(queue<GameEventMessage>* q)
 
 int ProcessAttach(HINSTANCE hModule) {
     //std::cout << "*** Process attached! ***" << std::endl;
-    g_hGrimRunWnd = FindWindow(L"WindowsForms10.Window.8.app.0.141b42a_r8_ad1", NULL);
-    
+        
     // why does this crash the target process?
     // thread worker_thread(ListenerThread);
     g_hWorkerThread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)WorkerThread, hModule, 0, nullptr);
@@ -181,28 +188,25 @@ int ProcessDetach(HINSTANCE hModule) {
     }
 
     CloseHandle(g_hWorkerThread);
+    CloseHandle(g_hPipe);
     return TRUE;
 }
 
 void SendGrimRunMessage(GrimRunMessage msg)
 {
-    COPYDATASTRUCT cds;
-    
-    std::string str = "this is a test from DLL!";
-    size_t msgSize = 
-        str.size() < 255 
-        ? str.size() 
-        : 255;
-    
-    //str.copy(data.Text, msgSize);
+    DWORD bytesWritten;
 
-    cds.dwData = 1; // can be anything, identifies the data type.  should be structured?
-    cds.cbData = sizeof(msg); // size of whole struct?  does it matter?
-    cds.lpData = &msg; // ptr to payload to send
-
-    if (g_hGrimRunWnd > 0)
+    if (g_hPipe != INVALID_HANDLE_VALUE)
     {
-        SendMessage(g_hGrimRunWnd, WM_COPYDATA, 0, (LPARAM)&cds);
+        WriteFile(g_hPipe,
+            &msg,
+            sizeof(GrimRunMessage),
+            &bytesWritten,
+            NULL);
+    }
+    else
+    {
+        std::cout << "Invalid handle to pipe" << std::endl;
     }
 }
 
