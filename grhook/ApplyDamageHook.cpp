@@ -85,10 +85,6 @@ void* __fastcall ApplyDamageHook::FunctionHook(void* This, float f, int* PlaySta
 		GrimDawnHook::condition.notify_one();
 	}
 	
-	// before returning, create data object to send to Grim Run
-	// can probably just be the byte array since it has to be Marshalled anyway?
-	// maybe using Pipes would be different, tbd
-
 	void* v = oApplyDamageFunc(This, f, PlayStatsDamageType, CombatAttributeType, Vector);
 	return v;
 }

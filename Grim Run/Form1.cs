@@ -14,8 +14,10 @@ namespace GrimRun
     public partial class Form1 : Form
     {
         private const uint WM_COPYDATA = 0x4A;
-        private string dllPath = "D:\\Projects\\Grim Run\\Debug\\grhook.dll";
+        private string dllPath = "D:\\Projects\\Grim Run\\x64\\Debug\\grhook.dll";
         private string processName = "Grim Dawn";
+
+        private float totalDamage;
 
         public Form1()
         {
@@ -43,9 +45,22 @@ namespace GrimRun
             if (m.Msg == WM_COPYDATA)
             {
                 COPYDATASTRUCT cds = Marshal.PtrToStructure<COPYDATASTRUCT>(m.LParam);
-                DataRec dataRec = Marshal.PtrToStructure<DataRec>(cds.lpData);
-                
-                this.textBox1.Text = dataRec.Text.Substring(0, cds.cbData);
+                GrimRunMessage msg = Marshal.PtrToStructure<GrimRunMessage>(cds.lpData);
+
+                if (msg.AttackerNameLen > 0)
+                {
+                    this.textBox1.Text = msg.AttackerName.Substring(0, msg.AttackerNameLen);
+                }
+                else
+                {
+                    this.textBox1.Text = msg.AttackerName;
+                }
+
+                if (msg.Damage > 0)
+                {
+                    totalDamage += msg.Damage;
+                    totalDamageDisplay.Text = totalDamage.ToString();
+                }
             }
 
             base.WndProc(ref m);
@@ -53,15 +68,47 @@ namespace GrimRun
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            GrimRunInjector.Inject(dllPath, processName);
+            return;// GrimRunInjector.Inject(dllPath, processName);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                GrimRunInjector.Inject(dllPath, processName);
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                Console.Error.WriteLine($"Unable to find process by name {processName}, exiting.");
+                this.Close();
+            }
         }
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public struct DataRec
+    public struct GrimRunMessage
     {
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 255)]
-        public string Text;
+        public float Damage;
+        public int AttackerNameLen;
+        public int DefenderNameLen;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 8)]
+        public string AttackerId;
+        
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 100)]
+        public string AttackerName;
+        
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 8)]
+        public string DefenderId;
+        
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 100)]
+        public string DefenderName;
+        
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+        public string CombatType;
+        
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+        public string DamageType;
     }
 
     [StructLayout(LayoutKind.Sequential)]

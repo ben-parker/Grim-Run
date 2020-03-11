@@ -165,8 +165,6 @@ void __cdecl LoggerHook::FunctionHook(
 	else if (startsWith(defenderNameMsg, str))
 	{
 		// %s param0
-		//cout << str;
-
 		std::string name = std::string((char*)_param0);
 		std::cout << "    Defender name: " << name << std::endl;
 

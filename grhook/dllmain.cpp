@@ -31,7 +31,7 @@ int ProcessAttach(HINSTANCE hModule);
 int ProcessDetach(HINSTANCE hModule);
 DWORD WINAPI WorkerThread(HMODULE hModule);
 void ListenerThread(queue<GameEventMessage>* q);
-void SendGrimRunMessage();
+void SendGrimRunMessage(GrimRunMessage msg);
 HANDLE OpenProcessByName(LPCTSTR Name, DWORD dwAccess);
 
 HANDLE g_hWorkerThread;
@@ -109,13 +109,12 @@ void ListenerThread(queue<GameEventMessage>* q)
        
         auto msg = q->front();
         q->pop();
-        //std::cout << "Popped a message" << std::endl;
-        // have an "in combat" flag and save these values to send with each message
-        // attacker name begins a combat event
-        // attacker id
-        // defender name
-        // defender ID
-        if (msg.msgType == GameEventType::attacker_name)
+
+        if (msg.msgType == GameEventType::apply_damage)
+        {
+            grm.Damage = msg.damage;
+        }
+        else if (msg.msgType == GameEventType::attacker_name)
         {
             combatEvent = true;
             attackerName = std::string(msg.data);
@@ -125,40 +124,45 @@ void ListenerThread(queue<GameEventMessage>* q)
         {
             attackerId = std::string(msg.data);
         }
-        else if (msg.msgType == GameEventType::apply_damage)
+        else if (msg.msgType == GameEventType::defender_name)
         {
-            grm.Damage = msg.damage;
-            std::cout << grm.Damage << std::endl;
+            defenderName = std::string(msg.data);
+            defenderNameLen = defenderName.length();
         }
         else if (msg.msgType == GameEventType::damage_to_defender)
         {
             memcpy(&grm.DefenderId, msg.data, 8);
             memcpy(&grm.DamageType, msg.data2, 20);
         }
+        else if (msg.msgType == GameEventType::end_combat)
+        {
+            combatEvent = false;
+        }
 
+        // multiple ApplyDamage messages occur within one combat event
         if (combatEvent)
         {
             attackerName.copy(grm.AttackerName, attackerNameLen);
             attackerId.copy(grm.AttackerId, 4);
-            // also copy defender name
+            defenderName.copy(grm.DefenderName, defenderNameLen);
+
+            grm.AttackerNameLen = attackerNameLen;
+            grm.DefenderNameLen = defenderNameLen;
         }
         
         // send message
         // if outside of a combat event (dot or environmental damage)
         // will just be damage amount and defender Id
-
-        
+        if (grm.Damage > 0)
+        {
+            SendGrimRunMessage(grm);
+        }
     }
 }
 
 int ProcessAttach(HINSTANCE hModule) {
     //std::cout << "*** Process attached! ***" << std::endl;
-    g_hGrimRunWnd = FindWindow(L"WindowsForms10.Window.8.app.0.141b42a_r10_ad1", NULL);
-
-    if (g_hGrimRunWnd > 0)
-    {
-        SendGrimRunMessage();
-    }
+    g_hGrimRunWnd = FindWindow(L"WindowsForms10.Window.8.app.0.141b42a_r8_ad1", NULL);
     
     // why does this crash the target process?
     // thread worker_thread(ListenerThread);
@@ -180,9 +184,8 @@ int ProcessDetach(HINSTANCE hModule) {
     return TRUE;
 }
 
-void SendGrimRunMessage()
+void SendGrimRunMessage(GrimRunMessage msg)
 {
-    GrimRunMessage data;
     COPYDATASTRUCT cds;
     
     std::string str = "this is a test from DLL!";
@@ -194,8 +197,8 @@ void SendGrimRunMessage()
     //str.copy(data.Text, msgSize);
 
     cds.dwData = 1; // can be anything, identifies the data type.  should be structured?
-    cds.cbData = str.size(); // size of whole struct?  does it matter?
-    cds.lpData = &data; // ptr to payload to send
+    cds.cbData = sizeof(msg); // size of whole struct?  does it matter?
+    cds.lpData = &msg; // ptr to payload to send
 
     if (g_hGrimRunWnd > 0)
     {
