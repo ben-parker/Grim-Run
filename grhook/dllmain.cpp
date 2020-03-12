@@ -97,6 +97,7 @@ DWORD WINAPI WorkerThread(HMODULE hModule)
 void ListenerThread(queue<GameEventMessage>* q)
 {
     bool combatEvent = false;
+    bool waitForDefenderMsg = false;
     GrimRunMessage grm = {};
     string attackerName, attackerId, defenderName, defenderId;
     size_t attackerNameLen, defenderNameLen = 0;
@@ -122,6 +123,27 @@ void ListenerThread(queue<GameEventMessage>* q)
         {
             grm.Damage = msg.damage;
         }
+        else if (msg.msgType == GameEventType::damage_to_defender)
+        {
+            memcpy(&grm.DefenderId, msg.data, 8);
+            memcpy(&grm.DamageType, msg.data2, 20);
+
+            if (combatEvent)
+            {
+                attackerName.copy(grm.AttackerName, attackerNameLen);
+                attackerId.copy(grm.AttackerId, 4);
+                defenderName.copy(grm.DefenderName, defenderNameLen);
+
+                grm.AttackerNameLen = attackerNameLen;
+                grm.DefenderNameLen = defenderNameLen;
+            }
+
+            if (grm.Damage > 0)
+            {
+                SendGrimRunMessage(grm);
+            }
+
+        }
         else if (msg.msgType == GameEventType::attacker_name)
         {
             combatEvent = true;
@@ -137,34 +159,17 @@ void ListenerThread(queue<GameEventMessage>* q)
             defenderName = std::string(msg.data);
             defenderNameLen = defenderName.length();
         }
-        else if (msg.msgType == GameEventType::damage_to_defender)
-        {
-            memcpy(&grm.DefenderId, msg.data, 8);
-            memcpy(&grm.DamageType, msg.data2, 20);
-        }
         else if (msg.msgType == GameEventType::end_combat)
         {
             combatEvent = false;
+            waitForDefenderMsg = false;
         }
 
         // multiple ApplyDamage messages occur within one combat event
-        if (combatEvent)
-        {
-            attackerName.copy(grm.AttackerName, attackerNameLen);
-            attackerId.copy(grm.AttackerId, 4);
-            defenderName.copy(grm.DefenderName, defenderNameLen);
-
-            grm.AttackerNameLen = attackerNameLen;
-            grm.DefenderNameLen = defenderNameLen;
-        }
         
         // send message
         // if outside of a combat event (dot or environmental damage)
         // will just be damage amount and defender Id
-        if (grm.Damage > 0)
-        {
-            SendGrimRunMessage(grm);
-        }
     }
 }
 

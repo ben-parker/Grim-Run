@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Grim_Run;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -23,13 +24,20 @@ namespace GrimRun
         private float totalDamage;
         private bool listen;
         private Thread pipeListener;
+        private Dictionary<string, List<(float damage, string type)>> damageDone;
 
         public Form1()
         {
             InitializeComponent();
-            this.Text = "Grim Run Test";
 
+            // event listener class to receive messages
+            // message parser class to translate messages into data
+            // https://stackoverflow.com/questions/22385529/how-do-i-communicate-with-a-control-of-a-form-from-another-class?noredirect=1&lq=1
+            // bind damage displays to a class that is updated by the parser class
+
+            damageDone = new Dictionary<string, List<(float damage, string type)>>();
             var progress = new Progress<GrimRunMessage>(UpdateDamage);
+            
             pipeListener = new Thread(() => PipeServer(progress));
             pipeListener.Start();
             listen = true;
@@ -38,9 +46,25 @@ namespace GrimRun
 
         private void UpdateDamage(GrimRunMessage msg)
         {
+            List<(float damage, string type)> entry;
+            if (damageDone.TryGetValue(msg.AttackerName, out entry))
+            {
+                entry.Add((msg.Damage, msg.DamageType));
+            }
+            else
+            {
+                entry = new List<(float damage, string type)>
+                {
+                    (msg.Damage, msg.DamageType)
+                };
+
+                damageDone.Add(msg.AttackerName, entry);
+            }
+
             totalDamage += msg.Damage;
             totalDamageDisplay.Text = totalDamage.ToString();
         }
+
         private void Form1_Shown(Object sender, EventArgs e)
         {
             try
@@ -135,6 +159,11 @@ namespace GrimRun
                 Console.Error.WriteLine($"Unable to find process by name {processName}, exiting.");
                 this.Close();
             }
+        }
+
+        private void physDmgLabel_Click(object sender, EventArgs e)
+        {
+
         }
     }
 
