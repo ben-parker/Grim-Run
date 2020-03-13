@@ -19,6 +19,7 @@ namespace Grim_Run
         private float _aether;
         private float _chaos;
         private float _totalDamage;
+        private float _unknown;
         
         private IProgress<(float, float, DamageType)> progress;
 
@@ -89,6 +90,7 @@ namespace Grim_Run
                 DamageType.Vitality => _vitality,
                 DamageType.Aether => _aether,
                 DamageType.Chaos => _chaos,
+                _ => _unknown
             };
             
             if (dmg.Type != DamageType.Unknown)

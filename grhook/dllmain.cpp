@@ -45,12 +45,12 @@ DWORD WINAPI WorkerThread(HMODULE hModule)
 {
     queue<GameEventMessage> msgQueue;
 
-    FreeConsole();
+   /* FreeConsole();
     AllocConsole();
     FILE* f;
     freopen_s(&f, "CONOUT$", "w", stdout);
 
-    std::cout << "*** Worker Thread started ***" << std::endl;
+    std::cout << "*** Worker Thread started ***" << std::endl;*/
 
     //hooks.push_back(new PauseGameHook());
     //hooks.push_back(new UnpauseGameHook());
@@ -85,8 +85,8 @@ DWORD WINAPI WorkerThread(HMODULE hModule)
     GrimDawnHook::condition.notify_one();
     listenerThread.join();
     
-    fclose(f);
-    FreeConsole();
+    //fclose(f);
+    //FreeConsole();
     FreeLibraryAndExitThread(hModule, 0);
     
     ProcessDetach(hModule);
@@ -117,7 +117,7 @@ void ListenerThread(queue<GameEventMessage>* q)
        
         auto msg = q->front();
         q->pop();
-        std::cout << "Popped message " << static_cast<int>(msg.msgType) << std::endl;
+        
         grm.msgType = msg.msgType;
         
         if (msg.msgType == GameEventType::apply_damage)
@@ -133,7 +133,6 @@ void ListenerThread(queue<GameEventMessage>* q)
         }
         else if (msg.msgType == GameEventType::attacker_name)
         {
-            std::cout << "Popped attacker name " << std::endl;
             std::string attackerName = std::string(msg.data);
             memcpy(&grm.data, msg.data, 100);
             grm.data_len = attackerName.length();
@@ -205,10 +204,10 @@ void SendGrimRunMessage(GameEventMessage msg)
             &bytesWritten,
             NULL);
     }
-    else
+   /* else
     {
         std::cout << "Invalid handle to pipe" << std::endl;
-    }
+    }*/
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)

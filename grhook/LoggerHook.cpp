@@ -145,9 +145,9 @@ void __cdecl LoggerHook::FunctionHook(
 	if (startsWith(attackerNameMsg, str))
 	{
 		// %s param0
-		std::string name = std::string((char*)_param0);
+		/*std::string name = std::string((char*)_param0);
 		cout << endl << "Begin Attack" << endl
-			<< "    Attacker name : " << name << endl;
+			<< "    Attacker name : " << name << endl;*/
 		if (ReadProcessMemory(hProcess, _param0, &msg.data, size, &bytesRead))
 		{
 			send = true;
@@ -189,15 +189,15 @@ void __cdecl LoggerHook::FunctionHook(
 	//}
 	else if (startsWith(damageToDefenderMsg, str))
 	{
-		std::string dmgType = std::string((char*)_param2);
+		//std::string dmgType = std::string((char*)_param2);
 		//const size_t size = 8;
 		//uint8_t result[size] = { 0 };
 		//size_t bytesRead = 0;
 		////int address = reinterpret_cast<char*>(_param1);
 		//PrintBytesAtAddress(hProcess, &_param0, size, result);
 
-		cout << "      Damage to defender 0x" << _param1 << " (" << dmgType << ")"
-			<< endl;// << address << endl;
+		//cout << "      Damage to defender 0x" << _param1 << " (" << dmgType << ")"
+		//	<< endl;// << address << endl;
 
 		if (ReadProcessMemory(hProcess, &_param1, &msg.data, 4, &bytesRead)
 			&& ReadProcessMemory(hProcess, _param2, &msg.data2, size, &bytesRead))
@@ -246,14 +246,14 @@ void __cdecl LoggerHook::FunctionHook(
 	}*/
 	else if (startsWith(combatTypeMsg, str))
 	{
-		cout << str;
+		//cout << str;
 		memcpy(&msg.data, str, size);
 		send = true;
 		msg.msgType = GameEventType::combat_type;
 	}
 	else if (startsWith(endCombatMsg, str))
 	{
-		cout << "End Combat";
+		//cout << "End Combat";
 		send = true;
 		msg.msgType = GameEventType::end_combat;
 	}

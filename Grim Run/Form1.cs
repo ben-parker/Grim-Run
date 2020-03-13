@@ -63,8 +63,8 @@ namespace GrimRun
                 DamageType.Chaos => chaosDmg,
             };
 
-            totalDamageDisplay.Text = d.total.ToString();
-            damageTypeValue.Text = d.damage.ToString();
+            totalDamageDisplay.Text = d.total.ToString("N0");
+            damageTypeValue.Text = d.damage.ToString("N0");
         }
 
         private void Form1_Shown(Object sender, EventArgs e)
