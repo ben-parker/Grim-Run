@@ -62,18 +62,13 @@ void* __fastcall ApplyDamageHook::FunctionHook(void* This, float f, int* PlaySta
 	// e.g. Cadence elemental damage component
 	// Transmuter damage component
 	// end of message
-	if (playStatsDamageTypeValue != 4)
+	if (playStatsDamageTypeValue != 4 && f > 0)
 	{
 		std::cout << "    ApplyDamage amount " << f << 
 			" type " << damageType << std::endl;
 
 		m.msgType = GameEventType::apply_damage;
 		m.damage = f;
-	}
-	else
-	{
-		std::cout << "End attack" << std::endl;
-		m.msgType = GameEventType::end_combat;
 	}
 
 	if (msgQueue != nullptr)

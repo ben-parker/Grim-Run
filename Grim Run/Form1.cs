@@ -17,14 +17,14 @@ namespace GrimRun
 {
     public partial class Form1 : Form
     {
-        private const uint WM_COPYDATA = 0x4A;
         private string dllPath = "D:\\Projects\\Grim Run\\x64\\Debug\\grhook.dll";
         private string processName = "Grim Dawn";
 
-        private float totalDamage;
-        private bool listen;
-        private Thread pipeListener;
-        private Dictionary<string, List<(float damage, string type)>> damageDone;
+        private List<Label> damageValueDisplays;
+
+        private GameEventListener listener;
+        private GameEventParser parser;
+        private DamageTracker damageTracker;
 
         public Form1()
         {
@@ -35,34 +35,36 @@ namespace GrimRun
             // https://stackoverflow.com/questions/22385529/how-do-i-communicate-with-a-control-of-a-form-from-another-class?noredirect=1&lq=1
             // bind damage displays to a class that is updated by the parser class
 
-            damageDone = new Dictionary<string, List<(float damage, string type)>>();
-            var progress = new Progress<GrimRunMessage>(UpdateDamage);
-            
-            pipeListener = new Thread(() => PipeServer(progress));
-            pipeListener.Start();
-            listen = true;
+            var progress = new Progress<(float, float, DamageType)>(UpdateTotalDamage);
+            damageValueDisplays = new List<Label>
+            {
+                physDmg, piercingDmg, fireDmg, coldDmg, lightningDmg,
+                acidDmg, vitalityDmg, aetherDmg, chaosDmg, totalDamageDisplay
+            };
+
             //Task.Run(() => PipeServer());
+            damageTracker = new DamageTracker(progress);
+            parser = new GameEventParser(damageTracker);
+            listener = new GameEventListener(parser);
         }
 
-        private void UpdateDamage(GrimRunMessage msg)
+        private void UpdateTotalDamage((float total, float damage, DamageType type) d)
         {
-            List<(float damage, string type)> entry;
-            if (damageDone.TryGetValue(msg.AttackerName, out entry))
+            var damageTypeValue = d.type switch
             {
-                entry.Add((msg.Damage, msg.DamageType));
-            }
-            else
-            {
-                entry = new List<(float damage, string type)>
-                {
-                    (msg.Damage, msg.DamageType)
-                };
+                DamageType.Physical => physDmg,
+                DamageType.Piercing => piercingDmg,
+                DamageType.Fire => fireDmg,
+                DamageType.Cold => coldDmg,
+                DamageType.Lightning => lightningDmg,
+                DamageType.Acid => acidDmg,
+                DamageType.Vitality => vitalityDmg,
+                DamageType.Aether => aetherDmg,
+                DamageType.Chaos => chaosDmg,
+            };
 
-                damageDone.Add(msg.AttackerName, entry);
-            }
-
-            totalDamage += msg.Damage;
-            totalDamageDisplay.Text = totalDamage.ToString();
+            totalDamageDisplay.Text = d.total.ToString();
+            damageTypeValue.Text = d.damage.ToString();
         }
 
         private void Form1_Shown(Object sender, EventArgs e)
@@ -78,126 +80,33 @@ namespace GrimRun
             }
         }
 
-        private void PipeServer(IProgress<GrimRunMessage> progress)
-        {
-            int bytesRead = 0;
-            var pipe = new NamedPipeServerStream("GrimRunPipe", PipeDirection.In);
-            pipe.WaitForConnection();
-
-            while (listen)
-            {
-                var bytes = new byte[Marshal.SizeOf(typeof(GrimRunMessage))];
-                bytesRead = pipe.Read(bytes, 0, Marshal.SizeOf(typeof(GrimRunMessage)));
-
-                if (bytesRead > 0)
-                {
-                    GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                    try
-                    {
-                        var msg = Marshal.PtrToStructure<GrimRunMessage>(handle.AddrOfPinnedObject());
-                        Console.WriteLine($"Attacker {msg.AttackerName} Damage {msg.Damage}");
-                        progress.Report(msg);
-                    }
-                    finally
-                    {
-                        handle.Free();
-                    }
-                }
-                else
-                {
-                    Console.Error.WriteLine("Failed to read from pipe, shutting my ears");
-                    listen = false;
-                }
-                
-            }
-        }
-
-        //protected override void WndProc(ref Message m)
-        //{
-        //    // Listen for operating system messages.
-        //    if (m.Msg == WM_COPYDATA)
-        //    {
-        //        COPYDATASTRUCT cds = Marshal.PtrToStructure<COPYDATASTRUCT>(m.LParam);
-        //        GrimRunMessage msg = Marshal.PtrToStructure<GrimRunMessage>(cds.lpData);
-
-        //        if (msg.AttackerNameLen > 0)
-        //        {
-        //            this.textBox1.Text = msg.AttackerName.Substring(0, msg.AttackerNameLen);
-        //        }
-        //        else
-        //        {
-        //            this.textBox1.Text = msg.AttackerName;
-        //        }
-
-        //        if (msg.Damage > 0)
-        //        {
-        //            totalDamage += msg.Damage;
-        //            totalDamageDisplay.Text = totalDamage.ToString();
-        //        }
-        //    }
-
-        //    base.WndProc(ref m);
-        //}
-
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            // GrimRunInjector.Inject(dllPath, processName);
-            listen = false;
-            pipeListener.Join();
+            // GrimRunInjector.Uninject(dllPath, processName);
+            listener.Stop();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             try
             {
-                listen = true;
                 GrimRunInjector.Inject(dllPath, processName);
             }
             catch (IndexOutOfRangeException ex)
             {
-                listen = false;
                 Console.Error.WriteLine($"Unable to find process by name {processName}, exiting.");
                 this.Close();
             }
         }
 
-        private void physDmgLabel_Click(object sender, EventArgs e)
+        private void resetButton_Click(object sender, EventArgs e)
         {
+            damageTracker.Reset();
 
+            foreach (var label in damageValueDisplays)
+            {
+                label.Text = "0";
+            }
         }
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public struct GrimRunMessage
-    {
-        public float Damage;
-        public int AttackerNameLen;
-        public int DefenderNameLen;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 8)]
-        public string AttackerId;
-        
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 100)]
-        public string AttackerName;
-        
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 8)]
-        public string DefenderId;
-        
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 100)]
-        public string DefenderName;
-        
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
-        public string CombatType;
-        
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
-        public string DamageType;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct COPYDATASTRUCT
-    {
-        public IntPtr dwData;
-        public int cbData;
-        public IntPtr lpData;
     }
 }

@@ -99,6 +99,7 @@ const char* damageToDefenderMsg = "^y    Damage %f to Defender 0x%x (%s)";
 const char* totalDamageMsg = "    Total Damage:  Absolute (%f), Over Time (%f)";
 const char* regionHitMsg = "    regionHit = %s";
 const char* combatTypeMsg = "    combatType = ";
+const char* endCombatMsg = "]";
 
 void PrintBytesAtAddress(const HANDLE& hProcess, void* address, size_t len, uint8_t* result)
 {
@@ -139,6 +140,7 @@ void __cdecl LoggerHook::FunctionHook(
 	const size_t size = 100;
 	uint8_t buffer[size] = { 0 };
 	GameEventMessage msg;
+	bool send = false;
 
 	if (startsWith(attackerNameMsg, str))
 	{
@@ -148,43 +150,43 @@ void __cdecl LoggerHook::FunctionHook(
 			<< "    Attacker name : " << name << endl;
 		if (ReadProcessMemory(hProcess, _param0, &msg.data, size, &bytesRead))
 		{
+			send = true;
 			msg.msgType = GameEventType::attacker_name;
-			msgQueue->push(msg);
 		}
 	}
-	else if (startsWith(attackerIdMsg, str))
-	{
-		//cout << str;
-		cout << "    Attacker ID 0x" << _param0 << endl;
-		if (ReadProcessMemory(hProcess, &_param0, &msg.data, 4, &bytesRead))
-		{
-			msg.msgType = GameEventType::attacker_id;
-			msgQueue->push(msg);
-		}
-	}
-	else if (startsWith(defenderNameMsg, str))
-	{
-		// %s param0
-		std::string name = std::string((char*)_param0);
-		std::cout << "    Defender name: " << name << std::endl;
+	//else if (startsWith(attackerIdMsg, str))
+	//{
+	//	//cout << str;
+	//	cout << "    Attacker ID 0x" << _param0 << endl;
+	//	if (ReadProcessMemory(hProcess, &_param0, &msg.data, 4, &bytesRead))
+	//	{
+	//		msg.msgType = GameEventType::attacker_id;
+	//		msgQueue->push(msg);
+	//	}
+	//}
+	//else if (startsWith(defenderNameMsg, str))
+	//{
+	//	// %s param0
+	//	std::string name = std::string((char*)_param0);
+	//	std::cout << "    Defender name: " << name << std::endl;
 
-		if (ReadProcessMemory(hProcess, _param0, &msg.data, size, &bytesRead))
-		{
-			msg.msgType = GameEventType::defender_name;
-			msgQueue->push(msg);
-		}
-	}
-	else if (startsWith(defenderIdMsg, str))
-	{
-		// last 2 bytes of pointer are same across messages
-		cout << "    Defender ID 0x" << _param0 << endl;
-		
-		if (ReadProcessMemory(hProcess, &_param0, &msg.data, 4, &bytesRead))
-		{
-			msg.msgType = GameEventType::defender_id;
-			msgQueue->push(msg);
-		}
-	}
+	//	if (ReadProcessMemory(hProcess, _param0, &msg.data, size, &bytesRead))
+	//	{
+	//		msg.msgType = GameEventType::defender_name;
+	//		msgQueue->push(msg);
+	//	}
+	//}
+	//else if (startsWith(defenderIdMsg, str))
+	//{
+	//	// last 2 bytes of pointer are same across messages
+	//	cout << "    Defender ID 0x" << _param0 << endl;
+	//	
+	//	if (ReadProcessMemory(hProcess, &_param0, &msg.data, 4, &bytesRead))
+	//	{
+	//		msg.msgType = GameEventType::defender_id;
+	//		msgQueue->push(msg);
+	//	}
+	//}
 	else if (startsWith(damageToDefenderMsg, str))
 	{
 		std::string dmgType = std::string((char*)_param2);
@@ -200,8 +202,8 @@ void __cdecl LoggerHook::FunctionHook(
 		if (ReadProcessMemory(hProcess, &_param1, &msg.data, 4, &bytesRead)
 			&& ReadProcessMemory(hProcess, _param2, &msg.data2, size, &bytesRead))
 		{
+			send = true;
 			msg.msgType = GameEventType::damage_to_defender;
-			msgQueue->push(msg);
 		}
 	}
 	//else if (startsWith(totalDamageMsg, str))
@@ -245,6 +247,24 @@ void __cdecl LoggerHook::FunctionHook(
 	else if (startsWith(combatTypeMsg, str))
 	{
 		cout << str;
+		memcpy(&msg.data, str, size);
+		send = true;
+		msg.msgType = GameEventType::combat_type;
+	}
+	else if (startsWith(endCombatMsg, str))
+	{
+		cout << "End Combat";
+		send = true;
+		msg.msgType = GameEventType::end_combat;
+	}
+
+	if (msgQueue != nullptr && send)
+	{
+		{
+			std::lock_guard<std::mutex> guard(GrimDawnHook::mQueue);
+			msgQueue->push(msg);
+		}
+		GrimDawnHook::condition.notify_one();
 	}
 	
 }

@@ -50,6 +50,7 @@
             this.chaosDmgLabel = new System.Windows.Forms.Label();
             this.lightningDmg = new System.Windows.Forms.Label();
             this.lightningDmgLabel = new System.Windows.Forms.Label();
+            this.resetButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // textBox1
@@ -99,7 +100,6 @@
             this.physDmgLabel.Size = new System.Drawing.Size(66, 20);
             this.physDmgLabel.TabIndex = 4;
             this.physDmgLabel.Text = "Physical";
-            this.physDmgLabel.Click += new System.EventHandler(this.physDmgLabel_Click);
             // 
             // physDmg
             // 
@@ -288,11 +288,23 @@
             this.lightningDmgLabel.TabIndex = 20;
             this.lightningDmgLabel.Text = "Lightning";
             // 
+            // resetButton
+            // 
+            this.resetButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.resetButton.Location = new System.Drawing.Point(506, 153);
+            this.resetButton.Name = "resetButton";
+            this.resetButton.Size = new System.Drawing.Size(233, 121);
+            this.resetButton.TabIndex = 22;
+            this.resetButton.Text = "Reset";
+            this.resetButton.UseVisualStyleBackColor = true;
+            this.resetButton.Click += new System.EventHandler(this.resetButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.resetButton);
             this.Controls.Add(this.lightningDmg);
             this.Controls.Add(this.lightningDmgLabel);
             this.Controls.Add(this.chaosDmg);
@@ -348,6 +360,7 @@
         private System.Windows.Forms.Label chaosDmgLabel;
         private System.Windows.Forms.Label lightningDmg;
         private System.Windows.Forms.Label lightningDmgLabel;
+        private System.Windows.Forms.Button resetButton;
     }
 }
 

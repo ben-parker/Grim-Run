@@ -31,7 +31,7 @@ int ProcessAttach(HINSTANCE hModule);
 int ProcessDetach(HINSTANCE hModule);
 DWORD WINAPI WorkerThread(HMODULE hModule);
 void ListenerThread(queue<GameEventMessage>* q);
-void SendGrimRunMessage(GrimRunMessage msg);
+void SendGrimRunMessage(GameEventMessage msg);
 HANDLE OpenProcessByName(LPCTSTR Name, DWORD dwAccess);
 
 HANDLE g_hWorkerThread;
@@ -98,8 +98,7 @@ void ListenerThread(queue<GameEventMessage>* q)
 {
     bool combatEvent = false;
     bool waitForDefenderMsg = false;
-    GrimRunMessage grm = {};
-    string attackerName, attackerId, defenderName, defenderId;
+    GameEventMessage grm = {};
     size_t attackerNameLen, defenderNameLen = 0;
  
     std::unique_lock<mutex> lock(GrimDawnHook::mQueue);
@@ -118,39 +117,36 @@ void ListenerThread(queue<GameEventMessage>* q)
        
         auto msg = q->front();
         q->pop();
-
+        std::cout << "Popped message " << static_cast<int>(msg.msgType) << std::endl;
+        grm.msgType = msg.msgType;
+        
         if (msg.msgType == GameEventType::apply_damage)
         {
-            grm.Damage = msg.damage;
+            grm.damage = msg.damage;
         }
         else if (msg.msgType == GameEventType::damage_to_defender)
         {
-            memcpy(&grm.DefenderId, msg.data, 8);
-            memcpy(&grm.DamageType, msg.data2, 20);
-
-            if (combatEvent)
-            {
-                attackerName.copy(grm.AttackerName, attackerNameLen);
-                attackerId.copy(grm.AttackerId, 4);
-                defenderName.copy(grm.DefenderName, defenderNameLen);
-
-                grm.AttackerNameLen = attackerNameLen;
-                grm.DefenderNameLen = defenderNameLen;
-            }
-
-            if (grm.Damage > 0)
-            {
-                SendGrimRunMessage(grm);
-            }
-
+            memcpy(&grm.data, msg.data, 8);
+            memcpy(&grm.data2, msg.data2, 20);
+            grm.data_len = 8;
+            grm.data2_len = 20;
         }
         else if (msg.msgType == GameEventType::attacker_name)
         {
-            combatEvent = true;
-            attackerName = std::string(msg.data);
-            attackerNameLen = attackerName.length();
+            std::cout << "Popped attacker name " << std::endl;
+            std::string attackerName = std::string(msg.data);
+            memcpy(&grm.data, msg.data, 100);
+            grm.data_len = attackerName.length();
         }
-        else if (msg.msgType == GameEventType::attacker_id)
+        else if (msg.msgType == GameEventType::combat_type)
+        {
+            std::string combatType = std::string(msg.data);
+            memcpy(&grm.data, msg.data, 100);
+            grm.data_len = combatType.length();
+        }
+
+        SendGrimRunMessage(grm);
+        /*else if (msg.msgType == GameEventType::attacker_id)
         {
             attackerId = std::string(msg.data);
         }
@@ -163,7 +159,7 @@ void ListenerThread(queue<GameEventMessage>* q)
         {
             combatEvent = false;
             waitForDefenderMsg = false;
-        }
+        }*/
 
         // multiple ApplyDamage messages occur within one combat event
         
@@ -197,7 +193,7 @@ int ProcessDetach(HINSTANCE hModule) {
     return TRUE;
 }
 
-void SendGrimRunMessage(GrimRunMessage msg)
+void SendGrimRunMessage(GameEventMessage msg)
 {
     DWORD bytesWritten;
 
@@ -205,7 +201,7 @@ void SendGrimRunMessage(GrimRunMessage msg)
     {
         WriteFile(g_hPipe,
             &msg,
-            sizeof(GrimRunMessage),
+            sizeof(GameEventMessage),
             &bytesWritten,
             NULL);
     }
