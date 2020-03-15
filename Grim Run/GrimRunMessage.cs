@@ -16,6 +16,9 @@ namespace Grim_Run
         public int DataLen;
         public int Data2Len;
 
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public byte[] bytes;
+
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 100)]
         public string Data;
 

@@ -154,28 +154,29 @@ void __cdecl LoggerHook::FunctionHook(
 			msg.msgType = GameEventType::attacker_name;
 		}
 	}
-	//else if (startsWith(attackerIdMsg, str))
-	//{
-	//	//cout << str;
-	//	cout << "    Attacker ID 0x" << _param0 << endl;
-	//	if (ReadProcessMemory(hProcess, &_param0, &msg.data, 4, &bytesRead))
-	//	{
-	//		msg.msgType = GameEventType::attacker_id;
-	//		msgQueue->push(msg);
-	//	}
-	//}
-	//else if (startsWith(defenderNameMsg, str))
-	//{
-	//	// %s param0
-	//	std::string name = std::string((char*)_param0);
-	//	std::cout << "    Defender name: " << name << std::endl;
+	else if (startsWith(attackerIdMsg, str))
+	{
+		//cout << str;
+		if (ReadProcessMemory(hProcess, &_param1, &msg.bytes, 4, &bytesRead))
+		{
+			send = true;
+			msg.msgType = GameEventType::attacker_id;
+			msgQueue->push(msg);
+		}
+	}
+	else if (startsWith(defenderNameMsg, str))
+	{
+		// %s param0
+		/*std::string name = std::string((char*)_param0);
+		std::cout << "    Defender name: " << name << std::endl;*/
 
-	//	if (ReadProcessMemory(hProcess, _param0, &msg.data, size, &bytesRead))
-	//	{
-	//		msg.msgType = GameEventType::defender_name;
-	//		msgQueue->push(msg);
-	//	}
-	//}
+		if (ReadProcessMemory(hProcess, _param0, &msg.data, size, &bytesRead))
+		{
+			send = true;
+			msg.msgType = GameEventType::defender_name;
+			msgQueue->push(msg);
+		}
+	}
 	//else if (startsWith(defenderIdMsg, str))
 	//{
 	//	// last 2 bytes of pointer are same across messages
@@ -190,17 +191,18 @@ void __cdecl LoggerHook::FunctionHook(
 	else if (startsWith(damageToDefenderMsg, str))
 	{
 		//std::string dmgType = std::string((char*)_param2);
-		//const size_t size = 8;
+		//const size_t size = 4;
 		//uint8_t result[size] = { 0 };
 		//size_t bytesRead = 0;
 		////int address = reinterpret_cast<char*>(_param1);
-		//PrintBytesAtAddress(hProcess, &_param0, size, result);
-
+		//PrintBytesAtAddress(hProcess, &_param1, size, result);
+		//char bytes[8] = { 0 };
+		//ReadProcessMemory(hProcess, &_param0+4, &bytes, 4, NULL);
 		//cout << "      Damage to defender 0x" << _param1 << " (" << dmgType << ")"
 		//	<< endl;// << address << endl;
 
-		if (ReadProcessMemory(hProcess, &_param1, &msg.data, 4, &bytesRead)
-			&& ReadProcessMemory(hProcess, _param2, &msg.data2, size, &bytesRead))
+		if (ReadProcessMemory(hProcess, &_param1, &msg.bytes, 4, &bytesRead)
+			&& ReadProcessMemory(hProcess, _param2, &msg.data2, 20, &bytesRead))
 		{
 			send = true;
 			msg.msgType = GameEventType::damage_to_defender;

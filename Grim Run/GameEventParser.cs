@@ -26,16 +26,18 @@ namespace Grim_Run
 
         public void Parse(GrimRunMessage msg)
         {
-            var messageType = (MessageType)msg.MessageType;
-            switch (messageType)
+            switch (msg.MessageType)
             {
                 case MessageType.AttackerName:
                     fullMessage = true;
                     attackerName = msg.Data.Substring(0, msg.DataLen);
                     break;
-                //case MessageType.AttackerId:
-                //    attackerId = msg.AttackerId;
-                //    break;
+                case MessageType.DefenderName:
+                    defenderName = msg.Data;
+                    break;
+                case MessageType.AttackerId:
+                    attackerId = BitConverter.ToString(msg.bytes);
+                    break;
                 case MessageType.ApplyDamage:
                     damage = msg.Damage;
                     break;
@@ -58,6 +60,7 @@ namespace Grim_Run
         private void ParseDamageToDefender(GrimRunMessage msg)
         {
             damageType = DamageTypeFromString(msg.Data2);
+            defenderId = BitConverter.ToString(msg.bytes);
 
             if (damageType == DamageType.Unknown) return;
 
@@ -96,12 +99,13 @@ namespace Grim_Run
                 damageList.Clear();
             }
             // dot and environmental damage only has damage and defender
-            else
+            else if (damage > 0)
             {
                 tracker.UpdateDamage(new DamageDealt
                 {
                     Damage = damage,
                     Type = damageType,
+                    DefenderId = defenderId,
                     CombatType = CombatType.Dot
                 });
             }

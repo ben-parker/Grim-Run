@@ -48,9 +48,9 @@ DWORD WINAPI WorkerThread(HMODULE hModule)
    /* FreeConsole();
     AllocConsole();
     FILE* f;
-    freopen_s(&f, "CONOUT$", "w", stdout);
+    freopen_s(&f, "CONOUT$", "w", stdout);*/
 
-    std::cout << "*** Worker Thread started ***" << std::endl;*/
+    //std::cout << "*** Worker Thread started ***" << std::endl;
 
     //hooks.push_back(new PauseGameHook());
     //hooks.push_back(new UnpauseGameHook());
@@ -85,8 +85,8 @@ DWORD WINAPI WorkerThread(HMODULE hModule)
     GrimDawnHook::condition.notify_one();
     listenerThread.join();
     
-    //fclose(f);
-    //FreeConsole();
+  /*  fclose(f);
+    FreeConsole();*/
     FreeLibraryAndExitThread(hModule, 0);
     
     ProcessDetach(hModule);
@@ -126,16 +126,26 @@ void ListenerThread(queue<GameEventMessage>* q)
         }
         else if (msg.msgType == GameEventType::damage_to_defender)
         {
-            memcpy(&grm.data, msg.data, 8);
+            memcpy(&grm.bytes, msg.bytes, 4);
             memcpy(&grm.data2, msg.data2, 20);
-            grm.data_len = 8;
+            grm.data_len = 4;
             grm.data2_len = 20;
+        }
+        else if (msg.msgType == GameEventType::attacker_id)
+        {
+            memcpy(&grm.bytes, msg.bytes, 4);
         }
         else if (msg.msgType == GameEventType::attacker_name)
         {
             std::string attackerName = std::string(msg.data);
             memcpy(&grm.data, msg.data, 100);
             grm.data_len = attackerName.length();
+        }
+        else if (msg.msgType == GameEventType::defender_name)
+        {
+            //std::string defenderName = std::string(msg.data);
+            memcpy(&grm.data, msg.data, 100);
+            //grm.data_len = defenderName.length();
         }
         else if (msg.msgType == GameEventType::combat_type)
         {
