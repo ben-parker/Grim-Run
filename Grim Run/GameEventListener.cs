@@ -45,8 +45,6 @@ namespace Grim_Run
                     try
                     {
                         var msg = Marshal.PtrToStructure<GrimRunMessage>(handle.AddrOfPinnedObject());
-                        Console.WriteLine($"Message type {msg.MessageType}");
-
                         parser.Parse(msg);
                     }
                     finally

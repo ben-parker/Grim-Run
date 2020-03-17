@@ -51,9 +51,9 @@ namespace Grim_Run
                     UpdateDamage();
                     fullMessage = false;
                     break;
-                //default:
-                //    throw new ArgumentException(
-                //        message: "Unknown game event", paramName: nameof(msg.MessageType));
+                default:
+                    Console.Error.WriteLine($"Unknown message type: {msg.MessageType}");
+                    break;
             }
         }
 
@@ -92,7 +92,8 @@ namespace Grim_Run
                         AttackerId = attackerId,
                         AttackerName = attackerName,
                         DefenderId = defenderId,
-                        DefenderName = defenderName
+                        DefenderName = defenderName,
+                        EventTime = DateTime.UtcNow
                     });
                 }
                 
@@ -106,7 +107,8 @@ namespace Grim_Run
                     Damage = damage,
                     Type = damageType,
                     DefenderId = defenderId,
-                    CombatType = CombatType.Dot
+                    CombatType = CombatType.Dot,
+                    EventTime = DateTime.UtcNow
                 });
             }
 
@@ -122,10 +124,12 @@ namespace Grim_Run
                 "Fire" => DamageType.Fire,
                 "Cold" => DamageType.Cold,
                 "Lightning" => DamageType.Lightning,
+                "Bleeding" => DamageType.Bleeding,
                 "Acid" => DamageType.Acid,
                 "Vitality" => DamageType.Vitality,
                 "Aether" => DamageType.Aether,
                 "Chaos" => DamageType.Chaos,
+                "PercentCurrentLife" => DamageType.PercentCurrentLife,
                 _ => UnrecognizedDamageType(damageType)
             };
 

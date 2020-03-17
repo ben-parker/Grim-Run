@@ -9,7 +9,6 @@ namespace Grim_Run
     class EntityDealtDamage
     {
         public string Name { get; set; }
-        public string Id { get; set; }
         List<(float, string)> DamageDone;
     }
 }

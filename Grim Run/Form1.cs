@@ -26,6 +26,8 @@ namespace GrimRun
         private GameEventParser parser;
         private DamageTracker damageTracker;
 
+        private static string newLine = Environment.NewLine;
+
         public Form1()
         {
             InitializeComponent();
@@ -36,14 +38,15 @@ namespace GrimRun
             // bind damage displays to a class that is updated by the parser class
 
             var progress = new Progress<(float, float, DamageType)>(UpdateTotalDamage);
+            var playerDmgProgress= new Progress<DamageDealt>(UpdateDamageToPlayer);
             damageValueDisplays = new List<Label>
             {
-                physDmg, piercingDmg, fireDmg, coldDmg, lightningDmg,
-                acidDmg, vitalityDmg, aetherDmg, chaosDmg, totalDamageDisplay
+                physDmg, piercingDmg, fireDmg, coldDmg, lightningDmg, bleedingDmg,
+                acidDmg, vitalityDmg, aetherDmg, chaosDmg, percentLifeDmg, totalDamageDisplay
             };
 
             //Task.Run(() => PipeServer());
-            damageTracker = new DamageTracker(progress);
+            damageTracker = new DamageTracker(progress, playerDmgProgress);
             parser = new GameEventParser(damageTracker);
             listener = new GameEventListener(parser);
         }
@@ -57,14 +60,25 @@ namespace GrimRun
                 DamageType.Fire => fireDmg,
                 DamageType.Cold => coldDmg,
                 DamageType.Lightning => lightningDmg,
+                DamageType.Bleeding => bleedingDmg,
                 DamageType.Acid => acidDmg,
                 DamageType.Vitality => vitalityDmg,
                 DamageType.Aether => aetherDmg,
                 DamageType.Chaos => chaosDmg,
+                DamageType.PercentCurrentLife => percentLifeDmg,
             };
 
             totalDamageDisplay.Text = d.total.ToString("N0");
             damageTypeValue.Text = d.damage.ToString("N0");
+        }
+
+        private void UpdateDamageToPlayer(DamageDealt d)
+        {
+            var attacker = String.IsNullOrEmpty(d.AttackerName) 
+                ? "Environment/DoT" 
+                : d.AttackerName;
+
+            dmgToPlayerLog.AppendText($"{d.EventTime.ToString()}    {d.Damage} {d.Type} from {attacker}{newLine}");
         }
 
         private void Form1_Shown(Object sender, EventArgs e)

@@ -51,6 +51,11 @@
             this.lightningDmg = new System.Windows.Forms.Label();
             this.lightningDmgLabel = new System.Windows.Forms.Label();
             this.resetButton = new System.Windows.Forms.Button();
+            this.bleedingDmg = new System.Windows.Forms.Label();
+            this.bleedingDmgLabel = new System.Windows.Forms.Label();
+            this.percentLifeDmg = new System.Windows.Forms.Label();
+            this.percentLifeDmgLabel = new System.Windows.Forms.Label();
+            this.dmgToPlayerLog = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // textBox1
@@ -138,7 +143,7 @@
             // 
             this.fireDmg.AutoSize = true;
             this.fireDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.fireDmg.Location = new System.Drawing.Point(90, 225);
+            this.fireDmg.Location = new System.Drawing.Point(89, 253);
             this.fireDmg.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.fireDmg.Name = "fireDmg";
             this.fireDmg.Size = new System.Drawing.Size(18, 20);
@@ -149,7 +154,7 @@
             // 
             this.fireDmgLabel.AutoSize = true;
             this.fireDmgLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.fireDmgLabel.Location = new System.Drawing.Point(19, 226);
+            this.fireDmgLabel.Location = new System.Drawing.Point(18, 254);
             this.fireDmgLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.fireDmgLabel.Name = "fireDmgLabel";
             this.fireDmgLabel.Size = new System.Drawing.Size(36, 20);
@@ -160,7 +165,7 @@
             // 
             this.coldDmg.AutoSize = true;
             this.coldDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.coldDmg.Location = new System.Drawing.Point(90, 255);
+            this.coldDmg.Location = new System.Drawing.Point(89, 283);
             this.coldDmg.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.coldDmg.Name = "coldDmg";
             this.coldDmg.Size = new System.Drawing.Size(18, 20);
@@ -171,7 +176,7 @@
             // 
             this.coldDmgLabel.AutoSize = true;
             this.coldDmgLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.coldDmgLabel.Location = new System.Drawing.Point(19, 256);
+            this.coldDmgLabel.Location = new System.Drawing.Point(18, 284);
             this.coldDmgLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.coldDmgLabel.Name = "coldDmgLabel";
             this.coldDmgLabel.Size = new System.Drawing.Size(41, 20);
@@ -182,7 +187,7 @@
             // 
             this.vitalityDmg.AutoSize = true;
             this.vitalityDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.vitalityDmg.Location = new System.Drawing.Point(257, 194);
+            this.vitalityDmg.Location = new System.Drawing.Point(268, 193);
             this.vitalityDmg.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.vitalityDmg.Name = "vitalityDmg";
             this.vitalityDmg.Size = new System.Drawing.Size(18, 20);
@@ -193,7 +198,7 @@
             // 
             this.vitalityDmgLabel.AutoSize = true;
             this.vitalityDmgLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.vitalityDmgLabel.Location = new System.Drawing.Point(186, 195);
+            this.vitalityDmgLabel.Location = new System.Drawing.Point(197, 194);
             this.vitalityDmgLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.vitalityDmgLabel.Name = "vitalityDmgLabel";
             this.vitalityDmgLabel.Size = new System.Drawing.Size(55, 20);
@@ -204,7 +209,7 @@
             // 
             this.acidDmg.AutoSize = true;
             this.acidDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.acidDmg.Location = new System.Drawing.Point(257, 164);
+            this.acidDmg.Location = new System.Drawing.Point(268, 163);
             this.acidDmg.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.acidDmg.Name = "acidDmg";
             this.acidDmg.Size = new System.Drawing.Size(18, 20);
@@ -215,7 +220,7 @@
             // 
             this.acidDmgLabel.AutoSize = true;
             this.acidDmgLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.acidDmgLabel.Location = new System.Drawing.Point(186, 165);
+            this.acidDmgLabel.Location = new System.Drawing.Point(197, 164);
             this.acidDmgLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.acidDmgLabel.Name = "acidDmgLabel";
             this.acidDmgLabel.Size = new System.Drawing.Size(40, 20);
@@ -226,7 +231,7 @@
             // 
             this.aetherDmg.AutoSize = true;
             this.aetherDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.aetherDmg.Location = new System.Drawing.Point(258, 225);
+            this.aetherDmg.Location = new System.Drawing.Point(269, 224);
             this.aetherDmg.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.aetherDmg.Name = "aetherDmg";
             this.aetherDmg.Size = new System.Drawing.Size(18, 20);
@@ -237,7 +242,7 @@
             // 
             this.aetherDmgLabel.AutoSize = true;
             this.aetherDmgLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.aetherDmgLabel.Location = new System.Drawing.Point(186, 225);
+            this.aetherDmgLabel.Location = new System.Drawing.Point(197, 224);
             this.aetherDmgLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.aetherDmgLabel.Name = "aetherDmgLabel";
             this.aetherDmgLabel.Size = new System.Drawing.Size(57, 20);
@@ -248,7 +253,7 @@
             // 
             this.chaosDmg.AutoSize = true;
             this.chaosDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chaosDmg.Location = new System.Drawing.Point(258, 255);
+            this.chaosDmg.Location = new System.Drawing.Point(269, 254);
             this.chaosDmg.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.chaosDmg.Name = "chaosDmg";
             this.chaosDmg.Size = new System.Drawing.Size(18, 20);
@@ -259,7 +264,7 @@
             // 
             this.chaosDmgLabel.AutoSize = true;
             this.chaosDmgLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chaosDmgLabel.Location = new System.Drawing.Point(186, 255);
+            this.chaosDmgLabel.Location = new System.Drawing.Point(197, 254);
             this.chaosDmgLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.chaosDmgLabel.Name = "chaosDmgLabel";
             this.chaosDmgLabel.Size = new System.Drawing.Size(55, 20);
@@ -270,7 +275,7 @@
             // 
             this.lightningDmg.AutoSize = true;
             this.lightningDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lightningDmg.Location = new System.Drawing.Point(90, 285);
+            this.lightningDmg.Location = new System.Drawing.Point(89, 313);
             this.lightningDmg.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.lightningDmg.Name = "lightningDmg";
             this.lightningDmg.Size = new System.Drawing.Size(18, 20);
@@ -281,7 +286,7 @@
             // 
             this.lightningDmgLabel.AutoSize = true;
             this.lightningDmgLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lightningDmgLabel.Location = new System.Drawing.Point(18, 285);
+            this.lightningDmgLabel.Location = new System.Drawing.Point(17, 313);
             this.lightningDmgLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.lightningDmgLabel.Name = "lightningDmgLabel";
             this.lightningDmgLabel.Size = new System.Drawing.Size(74, 20);
@@ -299,11 +304,68 @@
             this.resetButton.UseVisualStyleBackColor = true;
             this.resetButton.Click += new System.EventHandler(this.resetButton_Click);
             // 
+            // bleedingDmg
+            // 
+            this.bleedingDmg.AutoSize = true;
+            this.bleedingDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.bleedingDmg.Location = new System.Drawing.Point(89, 223);
+            this.bleedingDmg.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
+            this.bleedingDmg.Name = "bleedingDmg";
+            this.bleedingDmg.Size = new System.Drawing.Size(18, 20);
+            this.bleedingDmg.TabIndex = 24;
+            this.bleedingDmg.Text = "0";
+            // 
+            // bleedingDmgLabel
+            // 
+            this.bleedingDmgLabel.AutoSize = true;
+            this.bleedingDmgLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.bleedingDmgLabel.Location = new System.Drawing.Point(18, 224);
+            this.bleedingDmgLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
+            this.bleedingDmgLabel.Name = "bleedingDmgLabel";
+            this.bleedingDmgLabel.Size = new System.Drawing.Size(71, 20);
+            this.bleedingDmgLabel.TabIndex = 23;
+            this.bleedingDmgLabel.Text = "Bleeding";
+            // 
+            // percentLifeDmg
+            // 
+            this.percentLifeDmg.AutoSize = true;
+            this.percentLifeDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.percentLifeDmg.Location = new System.Drawing.Point(269, 284);
+            this.percentLifeDmg.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
+            this.percentLifeDmg.Name = "percentLifeDmg";
+            this.percentLifeDmg.Size = new System.Drawing.Size(18, 20);
+            this.percentLifeDmg.TabIndex = 26;
+            this.percentLifeDmg.Text = "0";
+            // 
+            // percentLifeDmgLabel
+            // 
+            this.percentLifeDmgLabel.AutoSize = true;
+            this.percentLifeDmgLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.percentLifeDmgLabel.Location = new System.Drawing.Point(197, 284);
+            this.percentLifeDmgLabel.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
+            this.percentLifeDmgLabel.Name = "percentLifeDmgLabel";
+            this.percentLifeDmgLabel.Size = new System.Drawing.Size(53, 20);
+            this.percentLifeDmgLabel.TabIndex = 25;
+            this.percentLifeDmgLabel.Text = "% Life";
+            // 
+            // dmgToPlayerLog
+            // 
+            this.dmgToPlayerLog.Location = new System.Drawing.Point(21, 393);
+            this.dmgToPlayerLog.Multiline = true;
+            this.dmgToPlayerLog.Name = "dmgToPlayerLog";
+            this.dmgToPlayerLog.Size = new System.Drawing.Size(545, 309);
+            this.dmgToPlayerLog.TabIndex = 27;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(800, 753);
+            this.Controls.Add(this.dmgToPlayerLog);
+            this.Controls.Add(this.percentLifeDmg);
+            this.Controls.Add(this.percentLifeDmgLabel);
+            this.Controls.Add(this.bleedingDmg);
+            this.Controls.Add(this.bleedingDmgLabel);
             this.Controls.Add(this.resetButton);
             this.Controls.Add(this.lightningDmg);
             this.Controls.Add(this.lightningDmgLabel);
@@ -361,6 +423,11 @@
         private System.Windows.Forms.Label lightningDmg;
         private System.Windows.Forms.Label lightningDmgLabel;
         private System.Windows.Forms.Button resetButton;
+        private System.Windows.Forms.Label bleedingDmg;
+        private System.Windows.Forms.Label bleedingDmgLabel;
+        private System.Windows.Forms.Label percentLifeDmg;
+        private System.Windows.Forms.Label percentLifeDmgLabel;
+        private System.Windows.Forms.TextBox dmgToPlayerLog;
     }
 }
 

@@ -15,5 +15,6 @@ namespace Grim_Run
         public float Damage;
         public DamageType Type;
         public CombatType CombatType;
+        public DateTime EventTime;
     }
 }

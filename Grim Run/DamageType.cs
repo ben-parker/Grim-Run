@@ -7,10 +7,12 @@
         Fire,
         Cold,
         Lightning,
+        Bleeding,
         Acid,
         Vitality,
         Aether,
         Chaos,
-        Unknown
+        Unknown,
+        PercentCurrentLife
     }
 }
